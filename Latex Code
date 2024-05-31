@@ -1,0 +1,436 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\title{%
+  Artificial Intelligence Homework \\
+  \large The Traveling Salesman Problem
+}
+\author{Băbeanu Cătălin-Cristian CEN2.1B}
+\date{May 2024}
+
+\begin{document}
+
+\begin{titlepage}
+\maketitle
+\end{titlepage}
+
+\section{Introduction}
+\href{https://github.com/catalinb19/HA_CEN2.1B_Babeanu_Catalin}{Homework GitHub Repository Link Insert later}
+
+\section{Problem statement}
+Traveling Salesman Problem: \\
+Given a list of cities and the distances between each pair of cities, what is the route of minimum cost that visits each city exactly once and returns to the origin city? The cost function of the solution must be the minimization of the longest distance between two consecutive cities.
+
+\section{Pseudocode of the algorithms}
+
+\subsection{Depth-First Search Pseudocode}
+
+\begin{verbatim}
+Function dfs(city, count, cost, start)
+    If count = n AND dist[city][start] ≠ 0 Then
+        minCost := min(minCost, cost + dist[city][start])
+        Return
+    End If
+
+    For i := 0 to n - 1 Do
+        If NOT visited[i] AND dist[city][i] ≠ 0 Then
+            visited[i] := true
+            dfs(i, count + 1, cost + dist[city][i], start)
+            visited[i] := false
+        End If
+    End For
+End Function
+
+For each city from 0 to n - 1 Do
+    visited[city] := true
+    dfs(city, 1, 0, city)
+    visited[city] := false
+End For
+
+Return minCost
+\end{verbatim}
+
+\subsection{Least-Cost Search Pseudocode}
+
+\begin{verbatim}
+Function uniformCostSearch()
+    pq = priority_queue<Node, vector<Node>, greater<Node>>()
+    initialVisited = vector<bool>(n, false)
+    initialVisited[0] = true
+    pq.push(Node(0, 0, 1, initialVisited))
+    minCost = INT_MAX
+
+    while not pq.empty():
+        current = pq.top()
+        pq.pop()
+
+        if current.count == n and dist[current.city][0] != 0:
+            minCost = min(minCost, current.cost + dist[current.city][0])
+            continue
+        end if
+
+        for i = 0 to n-1:
+            if not current.visited[i] and dist[current.city][i] != 0:
+                newVisited = current.visited
+                newVisited[i] = true
+                pq.push(Node(i, current.cost + dist[current.city][i], 
+                    current.count + 1, newVisited))
+        end for
+    end while
+    
+    return minCost
+End Function
+\end{verbatim}
+
+\end{verbatim}
+
+\subsection{A* Search Pseudocode}
+
+\begin{verbatim}
+Function heuristic(visited, current_city):
+    min_edge = array of size n initialized with INT_MAX
+    mst_cost = 0
+    
+    for i = 0 to n-1:
+        if not visited[i]:
+            for j = 0 to n-1:
+                if i ≠ j and not visited[j]:
+                    min_edge[i] = min(min_edge[i], dist[i][j])
+            mst_cost += min_edge[i]
+    end for
+    
+    nearest_to_start = INT_MAX
+    for i = 0 to n-1:
+        if not visited[i]:
+            nearest_to_start = min(nearest_to_start, dist[current_city][i] + dist[i][0])
+    end for
+    
+    return mst_cost + nearest_to_start
+end Function
+
+Function aStarSearch():
+    pq = priority_queue<Node, vector<Node>, greater<Node>>()
+    initialVisited = array of size n initialized with false
+    initialVisited[0] = true
+    pq.push(Node(0, 0, heuristic(initialVisited, 0), 1, initialVisited))
+    minCost = INT_MAX
+    
+    while not pq.empty():
+        current = pq.top()
+        pq.pop()
+        
+        if current.count == n and dist[current.city][0] ≠ 0:
+            minCost = min(minCost, current.g_cost + dist[current.city][0])
+            continue
+        end if
+        
+        for i = 0 to n-1:
+            if not current.visited[i] and dist[current.city][i] ≠ 0:
+                newVisited = current.visited
+                newVisited[i] = true
+                new_g_cost = current.g_cost + dist[current.city][i]
+                new_h_cost = heuristic(newVisited, i)
+                pq.push(Node(i, new_g_cost, new_h_cost, current.count + 1, newVisited))
+        end for
+    
+    return minCost
+end Function
+\end{verbatim}
+
+\section{Application outline}
+
+\subsection{High-Level Architectural Overview}
+The application aims to solve the Traveling Salesman Problem (TSP) by finding the route of minimum cost that visits each city exactly once and returns to the origin city. It employs three strategies: Exhaustive strategies using Depth-First Search and Least-Cost Search, and a Heuristic strategy using A* Search. Each strategy utilizes a different approach to find the optimal solution.
+
+\subsection{Input Data Format Specification}
+The input data format consists of:
+\begin{itemize}
+    \item Number of cities (n)
+    \item List of cities, where each city is represented by its coordinates (x, y)
+\end{itemize}
+
+\subsection{Output Data Format Specification}
+The output data format includes:
+\begin{itemize}
+    \item Minimum cost of the optimal route
+    \item Execution time of the function
+\end{itemize}
+
+\subsection{Modules in the Application}
+
+\subsubsection{Depth-First Search (DFS) Module}
+\textbf{Function:} \texttt{dfs(int city, int count, int cost, int start)}
+
+\textbf{Description:} This function implements a depth-first search algorithm to find the minimum cost route that visits each city exactly once and returns to the origin city.
+
+\textbf{Algorithm Explanation:}
+\begin{itemize}
+    \item The function starts from the start city and explores all possible paths by recursively visiting neighboring cities.
+    \item It maintains a count to keep track of the number of cities visited and a cost variable to track the total cost of the current route.
+    \item When all cities are visited (count == n) and there's a path back to the origin city, it updates the minCost variable with the minimum cost found so far.
+    \item The search continues recursively, exploring all possible paths until all cities are visited.
+\end{itemize}
+
+\subsubsection{Least-Cost Search Module}
+\textbf{Function:} \texttt{uniformCostSearch()}
+
+\textbf{Description:} This function implements the least-cost search algorithm to find the minimum cost route.
+
+\textbf{Algorithm Explanation:}
+\begin{itemize}
+    \item It utilizes a priority queue to explore paths in increasing order of cost.
+    \item The initial state contains the origin city with zero cost.
+    \item At each step, it expands the node with the lowest cost and generates successors by considering neighboring cities.
+    \item It maintains a count to keep track of the number of cities visited and a cost variable to track the total cost of the current route.
+    \item The search continues until all cities are visited, and it finds the minimum cost route.
+\end{itemize}
+
+\subsubsection{A* Search Module}
+\textbf{Function:} \texttt{heuristic(dist: List[List[int]], node: Node)}
+
+\textbf{Description:} This function calculates the heuristic cost for the A* search algorithm.
+
+\textbf{Algorithm Explanation:}
+\begin{itemize}
+    \item The heuristic function estimates the cost of reaching the goal state from the current state.
+    \item It combines two components:
+    \begin{itemize}
+        \item Minimum Spanning Tree (MST) cost: It calculates the minimum cost to connect all unvisited cities.
+        \item Nearest neighbor to the start city: It finds the nearest unvisited city to the start city.
+    \end{itemize}
+    \item The heuristic cost is the sum of the MST cost and the nearest neighbor cost.
+\end{itemize}
+
+\textbf{Function:} \texttt{aStarSearch()}
+
+\textbf{Description:} This function implements the A* search algorithm to find the minimum cost route.
+
+\textbf{Algorithm Explanation:}
+\begin{itemize}
+    \item It utilizes a priority queue to explore paths based on the sum of the actual cost (g-cost) and the heuristic cost (h-cost).
+    \item The initial state contains the origin city with zero actual cost and heuristic cost calculated using the heuristic function.
+    \item At each step, it expands the node with the lowest total cost and generates successors by considering neighboring cities.
+    \item The actual cost (g-cost) is updated as the sum of the cost so far and the cost of moving to the next city.
+    \item The heuristic cost (h-cost) is recalculated for each successor.
+    \item The search continues until all cities are visited, and it finds the minimum cost route.
+\end{itemize}
+
+\item
+
+\section*{Depth-First Search (DFS) Module}
+\texttt{dfs(int city, int count, int cost, int start)}
+\subsection*{Description}
+Performs depth-first search to find the minimum cost route that visits each city exactly once and returns to the origin city.
+\subsection*{Parameters}
+\begin{itemize}
+    \item \texttt{city}: Represents the current city being visited during the DFS traversal.
+    \item \texttt{count}: Tracks the number of cities visited so far in the current route.
+    \item \texttt{cost}: Represents the cumulative cost of the current route from the origin city to the current city.
+    \item \texttt{start}: Indicates the starting city of the route.
+\end{itemize}
+\subsection*{Return Value}
+Minimum cost of the optimal route.
+\subsection*{Algorithm Steps}
+\subsubsection*{Initialization}
+\begin{itemize}
+    \item Initialize the number of cities (\texttt{n}), city coordinates (\texttt{cities}), distance matrix (\texttt{dist}), visited cities (\texttt{visited}), and minimum cost (\texttt{minCost}).
+    \end{itemize}
+\subsubsection*{Search}
+\begin{itemize}
+    \item Start the DFS search from the origin city (city 1) by calling the \texttt{dfs} function with the parameters: current city (0), count of visited cities (1), current cost (0), and start city (0).
+    \item Inside the \texttt{dfs} function:
+    \item Check if all cities have been visited (\texttt{count == n}) and there's a path back to the origin city (\texttt{dist[city][start]}).
+    \item If the conditions are met, update the \texttt{minCost} with the minimum between the current cost and the sum of the current cost and the distance back to the origin city.
+    \item Recursively explore neighboring cities that haven't been visited yet:
+    \item Mark the city as visited.
+    \item Call the \texttt{dfs} function for the neighboring city with updated parameters: the neighboring city index, incremented count, updated cost, and start city index.
+    \item Mark the city as unvisited after the recursive call to backtrack.
+\end{itemize}
+\subsubsection*{End}
+\begin{itemize}
+    \item After exploring all possible paths and backtracking, the DFS search ends. At this point, the algorithm has found the minimum cost route that visits each city exactly once and returns to the origin city.
+    \item The minimum cost (\texttt{minCost}) and the execution time are printed to the console.
+\end{itemize}
+\section*{Least-Cost Search Module}
+\texttt{uniformCostSearch()}
+\subsection*{Description}
+Implements the least-cost search algorithm to find the minimum cost route.
+\subsection*{Parameters}
+None.
+\subsection*{Parameters Inside the Function}
+\begin{itemize}
+    \item \texttt{priority\_queue<Node, vector<Node>, greater<Node>> pq}: Priority queue to store nodes (cities) sorted by their cost in ascending order. Uses the \texttt{Node} struct with greater comparator to prioritize nodes with lower costs.
+    \item \texttt{vector<bool> initialVisited(n, false)}: Vector indicating which cities have been visited initially, initialized with false.
+    \item \texttt{initialVisited[0] = true}: Marks the origin city as visited initially.
+    \item \texttt{pq.push({0, 0, 1, initialVisited})}: Pushes the initial node (origin city) with cost 0 and count 1 (one city visited) into the priority queue.
+    \item \texttt{int minCost = INT\_MAX}: Initializes \texttt{minCost} variable to store the minimum cost found during the search.
+\end{itemize}
+\subsection*{Return Value}
+Minimum cost of the optimal route.
+\subsection*{Algorithm Steps}
+\subsubsection*{Initialization}
+\begin{itemize}
+    \item Initialize the number of cities (\texttt{n}), city coordinates (\texttt{cities}), distance matrix (\texttt{dist}), and priority queue (\texttt{pq}) for storing nodes.
+    \item Create a vector to track visited cities (\texttt{visited}), initializing all to false.
+    \item Push the initial node (origin city) into the priority queue \texttt{pq} with cost 0, count 1 (one city visited), and visited vector indicating the origin city as visited.
+    \end{itemize}
+\subsubsection*{Search}
+\begin{itemize}
+    
+    \item  While the priority queue \texttt{pq} is not empty:
+    \item  Pop the node with the lowest cost from the priority queue.
+    \item Check if all cities have been visited (\texttt{current.count == n}) and there's a path back to the origin city (\texttt{dist[current.city][0]}):
+    \item If conditions are met, update the minimum cost (\texttt{minCost}) with the minimum between the current cost and the sum of the current cost and the distance back to the origin city.
+    \item Continue to the next iteration.
+    \item Explore neighboring cities that haven't been visited yet:
+    \item Create a new visited vector \texttt{newVisited} by marking the visited city as true.
+    \item Push the new node into the priority queue with updated parameters: neighboring city index, updated cost, incremented count, and updated visited vector.
+\end{itemize}
+\subsubsection*{End}
+\begin{itemize}
+    \item  After exploring all possible paths, the Uniform Cost Search ends. At this point, the algorithm has found the minimum cost route that visits each city exactly once and returns to the origin city.
+    \item Print the minimum cost (\texttt{minCost}) and the execution time to the console.
+\end{itemize}
+\subsection*{A* Search Module}
+
+\texttt{heuristic(const vector<bool>\& visited, int current\_city)}
+
+\subsubsection*{Description}
+Calculates the heuristic cost for the A* search algorithm.
+
+\subsubsection*{Parameters}
+\begin{itemize}
+    \item \texttt{visited}: A vector indicating which cities have been visited in the current route.
+    \item \texttt{current\_city}: Represents the current city being visited.
+\end{itemize}
+
+\subsubsection*{Return Value}
+\texttt Heuristic cost. 
+
+\texttt{aStarSearch()}
+
+\subsubsection*{Description}
+Implements the A* search algorithm to find the minimum cost route.
+
+\subsubsection*{Parameters}
+None.
+
+\subsubsection*{Parameters Inside the Function}
+\begin{itemize}
+    \item \texttt{priority\_queue<Node, vector<Node>, greater<Node>> pq}: Priority queue to store nodes (cities) sorted by their total estimated cost in ascending order. Uses the \texttt{Node} struct with greater comparator to prioritize nodes with lower total costs.
+    \item \texttt{vector<bool> initialVisited(n, false)}: Vector indicating which cities have been visited initially, initialized with false.
+    \item \texttt{initialVisited[0] = true}: Marks the origin city as visited initially.
+    \item \texttt{pq.push({0, 0, heuristic(initialVisited, 0), 1, initialVisited})}: Pushes the initial node (origin city) with actual cost 0, heuristic cost calculated using the heuristic function, and count 1 (one city visited) into the priority queue.
+\end{itemize}
+
+\subsubsection*{Return Value}
+Minimum cost of the optimal route.
+
+\subsubsection*{Algorithm Steps}
+
+\textbf{Initialization:}
+\begin{itemize}
+    \item Initialize the number of cities (\texttt{n}), city coordinates (\texttt{cities}), distance matrix (\texttt{dist}), and priority queue (\texttt{pq}) for storing nodes.
+    \item Create a vector to track visited cities (\texttt{visited}), initializing all to false.
+    \item Push the initial node (origin city) into the priority queue pq with:
+    \begin{itemize}
+        \item \texttt{g\_cost}: Actual cost from the origin city to the current city (0 for the origin city).
+        \item \texttt{h\_cost}: Heuristic cost calculated using the heuristic function, considering the minimum spanning tree cost (MST) and the nearest neighbor to the start city.
+        \item \texttt{count}: Number of cities visited (1 for the origin city).
+        \item \texttt{visited} vector indicating the origin city as visited.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Search:}
+\begin{itemize}
+    \item While the priority queue \texttt{pq} is not empty:
+    \item Pop the node with the lowest total estimated cost (\texttt{g\_cost + h\_cost}) from the priority queue.
+    \item Check if all cities have been visited (\texttt{current.count == n}) and there's a path back to the origin city (\texttt{dist[current.city][0]}):
+    \begin{itemize}
+        \item If conditions are met, update the minimum cost (\texttt{minCost}) with the minimum between the current actual cost and the sum of the current actual cost and the distance back to the origin city.
+        \item Continue to the next iteration.
+    \end{itemize}
+    \item Explore neighboring cities that haven't been visited yet:
+    \begin{itemize}
+        \item Create a new visited vector \texttt{newVisited} by marking the visited city as true.
+        \item Calculate the new actual cost (\texttt{new\_g\_cost}) as the sum of the current actual cost and the distance to the neighboring city.
+        \item Calculate the new heuristic cost (\texttt{new\_h\_cost}) using the heuristic function.
+        \item Push the new node into the priority queue with updated parameters: neighboring city index, updated actual cost, updated heuristic cost, incremented count, and updated visited vector.
+    \end{itemize}
+\end{itemize}
+
+\textbf{End:}
+\begin{itemize}
+    \item After exploring all possible paths, the A* Search ends. At this point, the algorithm has found the minimum cost route that visits each city exactly once and returns to the origin city.
+    \item Print the minimum cost (\texttt{minCost}) and the execution time to the console.
+\end{itemize}
+
+\subsection*{Tools Module}
+
+\texttt{calculateDistance(pair<int, int> city1, pair<int, int> city2)}
+
+\subsubsection*{Description}
+Calculates the Euclidean distance between two cities represented by their coordinates.
+
+\subsubsection*{Parameters}
+\begin{itemize}
+    \item \texttt{city1}: A pair representing the coordinates (x, y) of the first city.
+    \item \texttt{city2}: A pair representing the coordinates (x, y) of the second city.
+\end{itemize}
+
+\subsubsection*{Return value}
+The rounded Euclidean distance between the two cities.
+
+\texttt{parseTSP(const string\& filename)}
+
+\subsubsection*{Description}
+This function parses a .tsp file to extract information about city coordinates and calculates distances between cities based on their coordinates.
+
+\subsubsection*{Parameters}
+\begin{itemize}
+    \item \texttt{filename}: A constant reference to a string representing the name of the .tsp file to be parsed.
+\end{itemize}
+
+\subsubsection*{Return Value}
+This function does not return a value.
+
+
+\section{Experiments}
+
+\subsection{Data Generation}
+A small set of predefined data consisting of 5 cities positioned at coordinates (0, 0), (1, 2), (3, 1), and (4, 3) was generated. Three algorithms, namely DFS, Uniform Cost Search, and A* Search, were applied to this dataset to determine the minimum cost and execution time.
+
+Additionally, three datasets were selected from the TSP-LIB site: a280.tsp, berlin52.tsp, and att48.tsp. To manage time complexity, the number of cities was reduced to 9 for a280, 10 for berlin52, and 11 for att48.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.3\linewidth]{experiment_result.png}
+\end{figure}
+
+\subsection{Experimentation}
+Experiments were conducted with all algorithms on each dataset. The results were compiled into an Excel file. Two charts were created: one illustrating the exponential growth of execution time in microseconds, and another demonstrating the consistent minimum cost across different algorithms for each dataset.
+
+
+\section{Conclusions}
+
+I have chosen C++ as my programming language because it is the one I use
+most frequently and feel most proficient in. My extensive experience with it
+allows me to leverage its features and libraries effectively. I encountered some
+difficulty when solving the tasks, but with perseverance, I eventually managed
+to find a solution and gained valuable insights in the process.
+
+\section{References}
+\begin{enumerate}
+    \item TSPLIB  \url {http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/}
+    \item \url {https://www.geeksforgeeks.org/traveling-salesman-problem-tsp-implementation/}
+    \item \url {https://www.geeksforgeeks.org/depth-first-search-or-dfs-for-a-graph/}
+    \item \url {https://www.geeksforgeeks.org/uniform-cost-search-dijkstra-for-large-graphs/}
+    \item \url {https://www.geeksforgeeks.org/heuristic-search-techniques-in-ai/}
+    \item \url {https://www.geeksforgeeks.org/a-search-algorithm/}
+    \item Graph Traversals-DFS \url{https://www.youtube.com/watch?v=pcKY4hjDrxk&t}
+\end{enumerate}
+
+\end{document}
