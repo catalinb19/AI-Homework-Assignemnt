@@ -23,4 +23,4 @@ The following datasets from TSPLIB have been selected and reduced for demonstrat
 ## Usage
 
 To select the desired input file, modify the filename inside the quotation marks as shown below:
-parseTSP("att48(11).tsp")
+- parseTSP("att48(11).tsp")
